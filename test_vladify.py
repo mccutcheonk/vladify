@@ -1,12 +1,12 @@
-import verify
+import vladify
 import unittest
 
 
 class TestFunctions(unittest.TestCase):
     def test_extend_path(self):
-        self.assertEqual('a', verify.extend_path('a'))
-        self.assertEqual('a.b', verify.extend_path('b', 'a'))
-        self.assertEqual('a[0]', verify.extend_path(0, 'a'))
+        self.assertEqual('a', vladify.extend_path('a'))
+        self.assertEqual('a.b', vladify.extend_path('b', 'a'))
+        self.assertEqual('a[0]', vladify.extend_path(0, 'a'))
 
 class MockDoc:
     def register_index(self, index, path):
@@ -27,7 +27,7 @@ class MockChecker:
 
 class TestStrSchema(unittest.TestCase):
     def test_type(self):
-        schema = verify.StrSchema()
+        schema = vladify.StrSchema()
         doc = MockDoc()
         with self.assertRaises(AssertionError):
             schema.validate(1, doc, self) # MockChecker())
@@ -36,7 +36,7 @@ class TestStrSchema(unittest.TestCase):
 
 class TestIntSchema(unittest.TestCase):
     def test_type(self):
-        schema = verify.IntSchema()
+        schema = vladify.IntSchema()
         doc = MockDoc()
         schema.validate(2, doc, self)
         with self.assertRaises(AssertionError):
@@ -45,7 +45,7 @@ class TestIntSchema(unittest.TestCase):
             schema.validate("1", doc, self)
 
     def test_coerce(self):
-        schema = verify.IntSchema(coerce=True)
+        schema = vladify.IntSchema(coerce=True)
         doc = MockDoc()
         schema.validate(2, doc, self)
         schema.validate("1", doc, self)
@@ -53,7 +53,7 @@ class TestIntSchema(unittest.TestCase):
             schema.validate("a1", doc, self)
 
     def test_min(self):
-        schema = verify.IntSchema(min=1)
+        schema = vladify.IntSchema(min=1)
         doc = MockDoc()
         schema.validate(2, doc, self)
         schema.validate(1, doc, self)
@@ -61,7 +61,7 @@ class TestIntSchema(unittest.TestCase):
             schema.validate(0, doc, self)
 
     def test_max(self):
-        schema = verify.IntSchema(max=10000)
+        schema = vladify.IntSchema(max=10000)
         doc = MockDoc()
         schema.validate(-100000, doc, self)
         schema.validate(1, doc, self)
