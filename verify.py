@@ -109,7 +109,12 @@ class IntSchema(Schema):
 
     def validate(self, data, doc, test):
         if self.coerce:
-            data = int(data)
+            try:
+                data = int(data)
+            except ValueError:
+                test.fail("Could not coerce value ('%s') to int" % data)
+                return
+
         test.assertTrue(isinstance(data, int),
                         "Incorrect type, expected int, found '%s'" % type(data))
         test.assertTrue(data >= self.min,
@@ -174,34 +179,51 @@ class Checker:
     def __init__(self, reporter, path=''):
         self.reporter = reporter
         self.path = path
+        reporter.report_field()
 
     def validate(self, data, schema, key, doc):
         schema.validate(data, doc,
                         Checker(self.reporter,
                                 extend_path(key, self.path)))
 
-    def raiseError(self, msg):
-        self.reporter.raiseError("Error at path '%s': %s" % (self.path, msg))
+    def fail(self, msg):
+        self.reporter.raise_error("Error at path '%s': %s" % (self.path, msg))
+
+    def report_check(self):
+        self.reporter.report_check()
 
     def assertTrue(self, v, msg):
+        self.report_check()
         if not v:
-            self.raiseError(msg)
+            self.fail(msg)
 
 
-class FailFastReporter:
-    def raiseError(self, msg):
+class Reporter(object):
+    def __init__(self):
+        self.num_checks = 0
+        self.num_fields = 0
+
+    def report_check(self):
+        self.num_checks += 1
+
+    def report_field(self):
+        self.num_fields += 1
+
+
+class FailFastReporter(Reporter):
+    def raise_error(self, msg):
         raise AssertionError(msg)
 
     def validate(self, doc):
         doc.validate(Checker(self))
 
 
-class AggregateReporter:
-
+class AggregateReporter(Reporter):
     def __init__(self):
+        super(AggregateReporter, self).__init__()
         self.errors = []
 
-    def raiseError(self, msg):
+    def raise_error(self, msg):
         self.errors.append(AssertionError(msg))
 
     def validate(self, doc):
@@ -239,8 +261,11 @@ if __name__ == '__main__':
 
         try:
             doc = Doc(data, levels_schema)
-            AggregateReporter().validate(doc)
-            # FailFastReporter().validate(doc)
+            reporter = AggregateReporter()
+            # reporter = FailFastReporter()
+            reporter.validate(doc)
+            print("%d checks performed on %d fields."
+                  % (reporter.num_checks, reporter.num_fields))
         except AssertionError, e:
             sys.exit(e)
     print "Ok"
