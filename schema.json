@@ -1,0 +1,19 @@
+{
+    "types": ["str, key"],
+    "levels": [
+        {
+            "name": "str, key",
+            "width": "int, min=0, max=18",
+            "height": "int, min=0, max=25",
+            "blocks": [
+                {
+                    "type": "str, ref=types",
+                    "column": "int, min=0, max=18, coerce",
+                    "row": "int, min=0, max=25, coerce",
+                    "prototype": "str"
+                }
+            ]
+        }
+    ]
+}
+

@@ -1,6 +1,7 @@
 import sys
 import types
 import json
+import argparse
 
 MAX_INT = (2**31) - 1
 MIN_INT = -MAX_INT - 1
@@ -171,7 +172,9 @@ def make_schema(desc):
         return DictSchema({k: make_schema(v) for (k, v) in desc.items()})
     elif isinstance(desc, list):
         return ListSchema(make_schema(desc[0]))
-    elif isinstance(desc, str) or isinstance(desc, unicode):
+    elif isinstance(desc, unicode):
+        return make_value_schema(desc.encode('utf8'))
+    elif isinstance(desc, str):
         return make_value_schema(desc)
 
 
@@ -235,37 +238,30 @@ class AggregateReporter(Reporter):
                                  % len(self.errors))
 
 
-types_schema = make_schema({
-    "types": ["str, key"]
-    })
-
-levels_schema = make_schema({
-     "types": ["str, key"],
-     "levels": [{
-         "name": "str, key",
-         "width": "int, min=0, max=18",
-         "height": "int, min=0, max=25",
-         "blocks": [{
-             "type": "str, ref=types",
-             "column": "int, min=0, max=18, coerce",
-             "row": "int, min=0, max=25, coerce",
-             "prototype": "str"
-         }]
-     }]
-})
-
-
 if __name__ == '__main__':
-    with open('data.json', 'r') as f:
-        data = json.load(f)
+    parser = argparse.ArgumentParser(description='Validate data according to schema.')
 
-        try:
-            doc = Doc(data, levels_schema)
-            reporter = AggregateReporter()
-            # reporter = FailFastReporter()
-            reporter.validate(doc)
-            print("%d checks performed on %d fields."
-                  % (reporter.num_checks, reporter.num_fields))
-        except AssertionError, e:
-            sys.exit(e)
+    parser.add_argument('-f', '--failfast', action='store_true',
+                        help='Stop validation on first error.')
+    parser.add_argument('-s', '--schema',
+                        help='Path to JSON file with schema definition.')
+    parser.add_argument('data', nargs='+',
+                        help='One or more data files to validate.')
+    args = parser.parse_args()
+
+    with open(args.schema, 'r') as f:
+        schema = make_schema(json.load(f))
+
+    for path in args.data:
+        print("Opening and validation '%s'..." % path)
+        with open(path, 'r') as f:
+            data = json.load(f)
+            try:
+                doc = Doc(data, schema)
+                reporter = FailFastReporter() if args.failfast else AggregateReporter()
+                reporter.validate(doc)
+                print("%d checks performed on %d fields."
+                      % (reporter.num_checks, reporter.num_fields))
+            except AssertionError, e:
+                sys.exit(e)
     print "Ok"
