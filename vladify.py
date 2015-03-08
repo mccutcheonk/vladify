@@ -3,9 +3,6 @@ import types
 import json
 import argparse
 
-MAX_INT = (2**31) - 1
-MIN_INT = -MAX_INT - 1
-
 
 def extend_path(key, previous=''):
     if isinstance(key, int):
@@ -102,10 +99,10 @@ class ListSchema(Schema):
 
 
 class IntSchema(Schema):
-    def __init__(self, min=MIN_INT, max=MAX_INT, coerce=False):
+    def __init__(self, min=None, max=None, coerce=False):
         super(IntSchema, self).__init__()
-        self.min = int(min)
-        self.max = int(max)
+        self.min = None if min is None else int(min)
+        self.max = None if max is None else int(max)
         self.coerce = coerce
 
     def validate(self, data, doc, test):
@@ -118,10 +115,12 @@ class IntSchema(Schema):
 
         test.assertTrue(isinstance(data, int),
                         "Incorrect type, expected int, found '%s'" % type(data))
-        test.assertTrue(data >= self.min,
-                        "Int value (%s) less than minimum (%s)" % (data, self.min))
-        test.assertTrue(data <= self.max,
-                        "Int value (%s) greater than maximum (%s)" % (data, self.max))
+        if self.min is not None:
+            test.assertTrue(data >= self.min,
+                            "Int value (%s) less than minimum (%s)" % (data, self.min))
+        if self.max is not None:
+            test.assertTrue(data <= self.max,
+                            "Int value (%s) greater than maximum (%s)" % (data, self.max))
 
 
 class StrSchema(Schema):
@@ -143,8 +142,8 @@ class StrSchema(Schema):
 
 
 def make_int_schema(params):
-    return IntSchema(min=params.get('min', MIN_INT),
-                     max=params.get('max', MAX_INT),
+    return IntSchema(min=params.get('min', None),
+                     max=params.get('max', None),
                      coerce=params.get('coerce', False))
 
 
