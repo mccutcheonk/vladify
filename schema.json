@@ -1,5 +1,5 @@
 {
-    "types": ["str, key"],
+    "prototypes": ["str, key"],
     "levels": [
         {
             "name": "str, key",
@@ -7,10 +7,10 @@
             "height": "int, min=0, max=25",
             "blocks": [
                 {
-                    "type": "str, ref=types",
+                    "type": "enum, members=Player|Target|Block|Arrow_Right|Arrow_Down|Arrow_Left|Arrow_Up|Portal|Portal_Turn|Diagonal_UR|Diagonal_DR|Diagonal_DL|Diagonal_UL",
                     "column": "int, min=0, max=18, coerce",
                     "row": "int, min=0, max=25, coerce",
-                    "prototype": "str"
+                    "prototype": "str, ref=prototypes"
                 }
             ]
         }

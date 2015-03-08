@@ -141,6 +141,18 @@ class StrSchema(Schema):
             doc.check_ref(self.ref, data, test)
 
 
+class EnumSchema(Schema):
+    def __init__(self, members, name=None):
+        super(EnumSchema, self).__init__()
+        self.members = members
+        self.name = name
+
+    def validate(self, data, doc, test):
+        test.assertTrue(data in self.members,
+                        "'%s' not a member of enum %s"
+                        % (data, self.name or ''))
+
+
 def make_int_schema(params):
     return IntSchema(min=params.get('min', None),
                      max=params.get('max', None),
@@ -151,11 +163,17 @@ def make_str_schema(params):
     return StrSchema(ref=params.get('ref', None))
 
 
+def make_enum_schema(params):
+    return EnumSchema(map(str.strip, params['members'].split('|')),
+                      name=params.get('name', None))
+
+
 def make_value_schema(desc):
     assert isinstance(desc, str)
     value_schemas = {
         'int': make_int_schema,
-        'str': make_str_schema
+        'str': make_str_schema,
+        'enum': make_enum_schema,
     }
     tokens = map(str.strip, desc.split(','))
     field_type = tokens[0]
@@ -252,7 +270,7 @@ if __name__ == '__main__':
         schema = make_schema(json.load(f))
 
     for path in args.data:
-        print("Opening and validation '%s'..." % path)
+        print("Validating '%s'..." % path)
         with open(path, 'r') as f:
             data = json.load(f)
             try:

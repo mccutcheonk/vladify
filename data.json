@@ -1,18 +1,18 @@
 {
-    "types" : [
-        "Player",
-        "Target",
-        "Block",
-        "Arrow_Right",
-        "Arrow_Down",
-        "Arrow_Left",
-        "Arrow_Up",
-        "Portal",
-        "Portal_Turn",
-        "Diagonal_UR",
-        "Diagonal_DR",
-        "Diagonal_DL",
-        "Diagonal_UL"
+    "prototypes": [
+        "orb_block",
+        "orb_player",
+        "orb_target",
+        "orb_diag_ur",
+        "orb_diag_ul",
+        "orb_diag_dr",
+        "orb_diag_dl",
+        "orb_arrow_u",
+        "orb_arrow_d",
+        "orb_arrow_l",
+        "orb_arrow_r",
+        "orb_portal",
+        "orb_portal_turn"
     ],
     "levels" : [
         {

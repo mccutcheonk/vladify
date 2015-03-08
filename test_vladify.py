@@ -70,6 +70,19 @@ class TestIntSchema(unittest.TestCase):
             schema.validate(20000, doc, self)
 
 
+class TestEnumSchema(unittest.TestCase):
+    def test_validate(self):
+        schema = vladify.EnumSchema(['Red','Green','Blue'])
+        doc = MockDoc()
+        schema.validate('Red', doc, self)
+        schema.validate('Green', doc, self)
+        schema.validate('Blue', doc, self)
+        with self.assertRaises(AssertionError):
+            schema.validate('red', doc, self)
+        with self.assertRaises(AssertionError):
+            schema.validate('Yellow', doc, self)
+
+
 if __name__ == '__main__':
     unittest.main()
     
